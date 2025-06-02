@@ -62,13 +62,3 @@ app/src/main/java/com/wordcontextai/
 3. 确保已安装Java 11
 4. 配置DeepSeek API密钥
 5. 同步项目并运行
-
-## 许可证
-
-© 2024 WordContext AI. All rights reserved.
-
-## 联系方式
-
-如有问题或建议，请通过以下方式联系：
-- 项目地址：[GitHub Repository]
-- 邮箱：[Your Email] 
