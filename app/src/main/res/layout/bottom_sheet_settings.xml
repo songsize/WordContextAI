@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="设置"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="24dp"
+        android:gravity="center" />
+
+    <!-- API密钥设置 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="API密钥管理"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="12dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:id="@+id/text_api_status"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="未设置"
+            android:textSize="14sp"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_manage_api_key"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="设置"
+            android:textSize="12sp"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:minHeight="32dp" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorOutlineVariant"
+        android:layout_marginVertical="16dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="文章风格"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="12dp" />
+
+    <RadioGroup
+        android:id="@+id/radio_group_style"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp">
+
+        <RadioButton
+            android:id="@+id/radio_daily"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="日常"
+            android:textSize="14sp"
+            android:paddingVertical="8dp" />
+
+        <RadioButton
+            android:id="@+id/radio_academic"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="学术"
+            android:textSize="14sp"
+            android:paddingVertical="8dp" />
+
+        <RadioButton
+            android:id="@+id/radio_business"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="商务"
+            android:textSize="14sp"
+            android:paddingVertical="8dp" />
+
+        <RadioButton
+            android:id="@+id/radio_literature"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="文学"
+            android:textSize="14sp"
+            android:paddingVertical="8dp" />
+
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="生成语言"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="12dp" />
+
+    <RadioGroup
+        android:id="@+id/radio_group_language"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
+        <RadioButton
+            android:id="@+id/radio_english"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="英文"
+            android:textSize="14sp"
+            android:paddingVertical="8dp" />
+
+        <RadioButton
+            android:id="@+id/radio_chinese"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="中文"
+            android:textSize="14sp"
+            android:paddingVertical="8dp" />
+
+    </RadioGroup>
+
+</LinearLayout> 
