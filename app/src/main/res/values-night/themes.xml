@@ -1,7 +1,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Base application theme for night mode. -->
     <style name="Base.Theme.WordContextAI" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <!-- 主题色 -->
+        <item name="colorPrimary">@color/primary_night</item>
+        <item name="colorPrimaryVariant">@color/primary_variant_night</item>
+        <item name="colorOnPrimary">@color/white</item>
+        
+        <!-- 状态栏 -->
+        <item name="android:statusBarColor">?attr/colorPrimary</item>
+        <item name="android:windowLightStatusBar">false</item>
+        
+        <!-- 导航栏 -->
+        <item name="android:navigationBarColor">@android:color/black</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+        
+        <!-- 边缘到边缘显示 - 暂时禁用 -->
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <!-- <item name="android:fitsSystemWindows">false</item> -->
     </style>
+
+    <style name="Theme.WordContextAI" parent="Base.Theme.WordContextAI" />
 </resources>

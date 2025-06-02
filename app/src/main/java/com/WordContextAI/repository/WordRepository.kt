@@ -101,97 +101,66 @@ class WordRepository(private val context: Context) {
     
     private fun createPrompt(word: String, style: ArticleStyle, language: Language): String {
         val languageInstruction = when (language) {
-            Language.ENGLISH -> "Please respond in English"
-            Language.CHINESE -> "请用中文回答"
+            Language.ENGLISH -> "Please write in English"
+            Language.CHINESE -> "请用中文写作"
+        }
+        
+        val styleInstruction = when (style) {
+            ArticleStyle.ACADEMIC -> "academic and scholarly style with formal language"
+            ArticleStyle.DAILY -> "casual and conversational style suitable for daily reading"
+            ArticleStyle.LITERATURE -> "literary and artistic style with rich descriptions"
+            ArticleStyle.BUSINESS -> "professional business style with clear and concise language"
         }
         
         return """
-        $languageInstruction. You are a professional vocabulary learning assistant. Create a comprehensive vocabulary learning content for the word "$word" in ${style.prompt}.
+        $languageInstruction. Write an engaging and natural article that incorporates the word "$word" multiple times throughout the text.
         
-        Please provide:
+        Requirements:
+        1. The article should be 300-500 words long
+        2. Use "$word" naturally at least 5-8 times in different contexts
+        3. The article should be coherent, interesting, and educational
+        4. Write in ${styleInstruction}
+        5. The content should help readers understand how to use "$word" in real contexts
+        6. Make the article feel like a genuine piece of writing, not a vocabulary exercise
+        7. Include a compelling title that may or may not contain the word "$word"
         
-        1. **Definition**: Clear and accurate definition of "$word"
-        2. **Pronunciation**: Phonetic transcription if writing in English
-        3. **Part of Speech**: Noun, verb, adjective, etc.
-        4. **Usage Examples**: 3-4 authentic example sentences showing "$word" in different contexts
-        5. **Memory Tips**: Effective techniques to remember this word (etymology, word associations, etc.)
-        6. **Synonyms & Antonyms**: Related words that help expand vocabulary
-        7. **Common Collocations**: Frequent word combinations with "$word"
-        8. **Context Application**: How to use "$word" effectively in ${style.displayName.lowercase()} situations
+        Important: Do NOT write vocabulary definitions, pronunciation guides, or explicit language learning content. Instead, create a real article where "$word" appears naturally in context.
         
-        Make the content educational, engaging, and practical for vocabulary learners. Focus on helping users truly understand and remember how to use "$word" correctly.
-        
-        Target word: $word
-        Learning style: ${style.displayName}
+        Target word to incorporate: $word
+        Writing style: ${style.displayName}
         """.trimIndent()
     }
     
     private fun generateMockArticle(word: String, style: ArticleStyle, language: Language): String {
         return when (language) {
             Language.ENGLISH -> """
-                **📚 Vocabulary Learning: "$word"**
+                ## The Power of Innovation in Modern Technology
                 
-                **Definition**: [A comprehensive explanation of what "$word" means]
+                In today's rapidly evolving world, **$word** has become more than just a buzzword—it's a fundamental driver of progress. Companies that embrace **$word** are consistently outperforming their competitors in ways that were unimaginable just a decade ago.
                 
-                **Pronunciation**: /${word.lowercase()}/ 
+                Consider how **$word** has transformed the technology sector. Silicon Valley giants have built their empires on a foundation of continuous **$word**, creating products that reshape how we live, work, and communicate. This commitment to **$word** isn't limited to tech companies; traditional industries are also discovering that **$word** is essential for survival in the 21st century.
                 
-                **Part of Speech**: [Noun/Verb/Adjective/etc.]
+                The most successful leaders understand that fostering a culture of **$word** requires more than just encouraging creative thinking. It demands a willingness to challenge conventional wisdom, invest in experimentation, and accept that failure is often a stepping stone to breakthrough **$word**. Organizations that create environments where **$word** can flourish are the ones writing the future.
                 
-                **Usage Examples**:
-                • The project requires innovative thinking to achieve success.
-                • She presented an innovative solution to the problem.
-                • Our company values innovative approaches in all departments.
-                • His innovative ideas revolutionized the industry.
+                As we look ahead, the importance of **$word** will only continue to grow. Those who master the art of sustainable **$word** will shape tomorrow's world, while those who resist change risk being left behind. The question isn't whether to embrace **$word**, but how quickly we can adapt to its transformative power.
                 
-                **Memory Tips**: 
-                💡 Think of "in + nova + tive" - bringing in something "nova" (new/star-like)
-                💡 Associate with "invention" - both start with "in" and relate to creativity
-                
-                **Synonyms**: creative, original, groundbreaking, revolutionary
-                **Antonyms**: traditional, conventional, outdated
-                
-                **Common Collocations**:
-                • innovative approach/solution/technology
-                • highly innovative, truly innovative
-                • innovative thinking/design/methods
-                
-                **${style.displayName} Application**:
-                In ${style.displayName.lowercase()} contexts, "$word" is frequently used to describe new methods, technologies, or approaches that bring positive change.
-                
-                📝 **Demo Mode**: Configure your DeepSeek API key in settings for AI-powered vocabulary learning content.
+                ---
+                *This is a demo article. Configure your API key to generate personalized content for any word.*
             """.trimIndent()
             
             Language.CHINESE -> """
-                **📚 词汇学习："$word"**
+                ## 创新思维改变世界
                 
-                **定义**: [详细解释"$word"的含义]
+                在这个快速变化的时代，**$word** 已经不仅仅是一个流行词汇——它已成为推动社会进步的核心力量。那些真正拥抱 **$word** 的企业，正在以前所未有的方式超越竞争对手。
                 
-                **发音**: /${word.lowercase()}/
+                让我们看看 **$word** 是如何改变科技行业的。硅谷的科技巨头们正是建立在持续 **$word** 的基础上，创造出改变我们生活、工作和交流方式的产品。这种对 **$word** 的承诺不仅限于科技公司；传统行业也在发现，**$word** 是在21世纪生存的关键。
                 
-                **词性**: [名词/动词/形容词等]
+                最成功的领导者明白，培养 **$word** 文化需要的不仅仅是鼓励创造性思维。它需要挑战传统智慧的勇气，需要在实验上的投资，需要接受失败往往是突破性 **$word** 的垫脚石。那些能够创造让 **$word** 蓬勃发展环境的组织，正是在书写未来的组织。
                 
-                **用法示例**:
-                • 这个项目需要创新思维才能取得成功。
-                • 她提出了一个创新的解决方案。
-                • 我们公司重视各部门的创新方法。
-                • 他的创新想法彻底改变了整个行业。
+                展望未来，**$word** 的重要性只会继续增长。那些掌握可持续 **$word** 艺术的人将塑造明天的世界，而那些抗拒改变的人则有被时代抛弃的风险。问题不是是否要拥抱 **$word**，而是我们能多快适应它的变革力量。
                 
-                **记忆技巧**:
-                💡 将"innovative"分解为"in + nova + tive" - 引入"nova"(新星)般的事物
-                💡 与"invention"(发明)联系 - 都以"in"开头，都与创造力相关
-                
-                **同义词**: creative, original, groundbreaking, revolutionary
-                **反义词**: traditional, conventional, outdated
-                
-                **常用搭配**:
-                • innovative approach/solution/technology (创新方法/解决方案/技术)
-                • highly innovative, truly innovative (高度创新的，真正创新的)
-                • innovative thinking/design/methods (创新思维/设计/方法)
-                
-                **${style.displayName}应用场景**:
-                在${style.displayName}语境中，"$word"经常用于描述带来积极变化的新方法、技术或途径。
-                
-                📝 **演示模式**: 在设置中配置您的DeepSeek API密钥以获取AI驱动的词汇学习内容。
+                ---
+                *这是演示文章。配置API密钥后可为任意词汇生成个性化内容。*
             """.trimIndent()
         }
     }

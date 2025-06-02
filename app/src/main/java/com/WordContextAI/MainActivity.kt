@@ -1,58 +1,79 @@
 package com.wordcontextai
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.graphics.Color
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.BackgroundColorSpan
+import android.text.style.ForegroundColorSpan
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
+import android.view.animation.AnimationUtils
+// import androidx.core.view.ViewCompat
+// import androidx.core.view.WindowCompat
+// import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.wordcontextai.adapter.ChatAdapter
 import com.wordcontextai.data.ArticleStyle
 import com.wordcontextai.data.Language
 import com.wordcontextai.databinding.ActivityMainBinding
 import com.wordcontextai.databinding.BottomSheetSettingsBinding
 import com.wordcontextai.databinding.DialogApiKeyBinding
 import com.wordcontextai.viewmodel.ChatViewModel
+import io.noties.markwon.Markwon
+import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
+import io.noties.markwon.ext.tables.TablePlugin
 
 class MainActivity : AppCompatActivity() {
     
     private lateinit var binding: ActivityMainBinding
-    private lateinit var chatAdapter: ChatAdapter
     private val viewModel: ChatViewModel by viewModels()
+    private lateinit var markwon: Markwon
+    private var currentWord: String = ""
+    private var currentContent: String = "" // 保存原始内容用于复制
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // 使用 ViewBinding
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        // 基本设置
         setupToolbar()
-        setupRecyclerView()
         setupInputField()
+        setupCopyButton()
         observeViewModel()
+        
+        // 设置 Markwon
+        setupMarkwon()
     }
     
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = "WordContext AI"
+        supportActionBar?.title = ""
     }
     
-    private fun setupRecyclerView() {
-        chatAdapter = ChatAdapter()
-        binding.recyclerViewChat.apply {
-            adapter = chatAdapter
-            layoutManager = LinearLayoutManager(this@MainActivity).apply {
-                stackFromEnd = true
-            }
-        }
+    private fun setupMarkwon() {
+        markwon = Markwon.builder(this)
+            .usePlugin(StrikethroughPlugin.create())
+            .usePlugin(TablePlugin.create(this))
+            .build()
     }
     
     private fun setupInputField() {
         binding.editTextInput.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_SEND) {
-                sendMessage()
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                searchWord()
                 true
             } else {
                 false
@@ -60,24 +81,38 @@ class MainActivity : AppCompatActivity() {
         }
         
         binding.buttonSend.setOnClickListener {
-            sendMessage()
+            searchWord()
         }
     }
     
-    private fun sendMessage() {
+    private fun setupCopyButton() {
+        binding.buttonCopy.setOnClickListener {
+            if (currentContent.isNotEmpty()) {
+                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Article", currentContent)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(this, "文章已复制到剪贴板", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
+    private fun searchWord() {
         val word = binding.editTextInput.text.toString().trim()
         if (word.isNotEmpty()) {
+            currentWord = word
             viewModel.generateArticleForWord(word)
-            binding.editTextInput.text?.clear()
+            // 隐藏键盘
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(binding.editTextInput.windowToken, 0)
         }
     }
     
     private fun observeViewModel() {
         viewModel.messages.observe(this) { messages ->
-            chatAdapter.submitList(messages) {
-                // 滚动到最新消息
-                if (messages.isNotEmpty()) {
-                    binding.recyclerViewChat.scrollToPosition(messages.size - 1)
+            if (messages.isNotEmpty()) {
+                val latestMessage = messages.last()
+                if (!latestMessage.isUser && latestMessage.content.isNotEmpty()) {
+                    showContent(latestMessage.content)
                 }
             }
         }
@@ -85,6 +120,81 @@ class MainActivity : AppCompatActivity() {
         viewModel.isLoading.observe(this) { isLoading ->
             binding.buttonSend.isEnabled = !isLoading
             binding.editTextInput.isEnabled = !isLoading
+            
+            if (isLoading) {
+                binding.layoutEmpty.visibility = View.GONE
+                binding.cardWord.visibility = View.GONE
+                binding.cardArticle.visibility = View.GONE
+                binding.loadingContainer.visibility = View.VISIBLE
+                
+                // 根据是否有API密钥显示不同的加载文本
+                val hasApiKey = viewModel.hasApiKey()
+                binding.textLoading.text = if (hasApiKey) {
+                    "正在生成包含「$currentWord」的文章..."
+                } else {
+                    "正在生成「$currentWord」的示例文章..."
+                }
+            } else {
+                binding.loadingContainer.visibility = View.GONE
+                
+                // 如果没有内容，显示空状态
+                if (viewModel.messages.value?.isEmpty() == true) {
+                    binding.layoutEmpty.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+    
+    private fun showContent(content: String) {
+        // 保存原始内容
+        currentContent = content
+        
+        // 显示单词卡片
+        binding.cardWord.visibility = View.VISIBLE
+        binding.textWord.text = currentWord
+        binding.textPronunciation.visibility = View.GONE // 隐藏音标，因为现在不是词汇学习
+        
+        // 显示文章卡片
+        binding.cardArticle.visibility = View.VISIBLE
+        
+        // 使用Markwon渲染Markdown内容
+        val spanned = markwon.toMarkdown(content)
+        
+        // 创建SpannableString以支持高亮
+        val spannableString = SpannableString(spanned)
+        
+        // 高亮显示目标单词
+        highlightWord(spannableString, currentWord)
+        
+        // 设置文本
+        binding.textArticleContent.text = spannableString
+        
+        // 添加淡入动画
+        val fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in)
+        binding.cardWord.startAnimation(fadeIn)
+        binding.cardArticle.startAnimation(fadeIn)
+    }
+    
+    private fun highlightWord(spannable: SpannableString, word: String) {
+        val text = spannable.toString()
+        val wordLower = word.lowercase()
+        var index = text.lowercase().indexOf(wordLower)
+        
+        while (index >= 0) {
+            // 使用新的高亮颜色
+            spannable.setSpan(
+                BackgroundColorSpan(Color.parseColor("#FEF7E0")), // highlight_yellow
+                index,
+                index + word.length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            spannable.setSpan(
+                ForegroundColorSpan(Color.parseColor("#EA8600")), // highlight_text
+                index,
+                index + word.length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            index = text.lowercase().indexOf(wordLower, index + 1)
         }
     }
     
@@ -97,10 +207,6 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_settings -> {
                 showSettingsBottomSheet()
-                true
-            }
-            R.id.action_clear -> {
-                showClearChatDialog()
                 true
             }
             R.id.action_about -> {
@@ -216,17 +322,6 @@ class MainActivity : AppCompatActivity() {
         }
         
         dialog.show()
-    }
-    
-    private fun showClearChatDialog() {
-        MaterialAlertDialogBuilder(this)
-            .setTitle("清除聊天记录")
-            .setMessage("确定要清除所有聊天记录吗？此操作不可撤销。")
-            .setPositiveButton("确定") { _, _ ->
-                viewModel.clearChat()
-            }
-            .setNegativeButton("取消", null)
-            .show()
     }
     
     private fun showAboutDialog() {
