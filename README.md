@@ -27,16 +27,6 @@ WordContext AI是一款智能词汇学习工具，通过生成式AI技术为您�
 4. **学习词汇**：文章中的目标词汇会被高亮显示
 5. **保存分享**：使用复制或分享功能保存学习内容
 
-## 配置说明
-
-### API配置
-
-在 `ApiClient.kt` 文件中配置您的DeepSeek API密钥：
-
-```kotlin
-private const val API_KEY = "YOUR_DEEPSEEK_API_KEY"
-```
-
 ### 系统要求
 
 - Android 8.0 (API level 26) 或更高版本

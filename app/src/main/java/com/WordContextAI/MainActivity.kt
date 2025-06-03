@@ -18,11 +18,10 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import android.view.animation.AnimationUtils
-// import androidx.core.view.ViewCompat
-// import androidx.core.view.WindowCompat
-// import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.wordcontextai.adapter.SearchHistoryAdapter
 import com.wordcontextai.data.ArticleStyle
 import com.wordcontextai.data.Language
 import com.wordcontextai.databinding.ActivityMainBinding
@@ -40,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var markwon: Markwon
     private var currentWord: String = ""
     private var currentContent: String = "" // 保存原始内容用于复制
+    private lateinit var searchHistoryAdapter: SearchHistoryAdapter
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         setupToolbar()
         setupInputField()
         setupCopyButton()
+        setupSearchHistory()
         observeViewModel()
         
         // 设置 Markwon
@@ -96,6 +97,39 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
+    private fun setupSearchHistory() {
+        // 初始化适配器
+        searchHistoryAdapter = SearchHistoryAdapter(
+            onItemClick = { searchHistory ->
+                // 点击历史记录时，执行搜索
+                binding.editTextInput.setText(searchHistory.word)
+                searchWord()
+            },
+            onDeleteClick = { searchHistory ->
+                // 删除单个历史记录
+                viewModel.deleteSearchHistory(searchHistory)
+            }
+        )
+        
+        // 设置RecyclerView
+        binding.recyclerSearchHistory.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = searchHistoryAdapter
+        }
+        
+        // 清空历史按钮
+        binding.buttonClearHistory.setOnClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle("清空搜索历史")
+                .setMessage("确定要清空所有搜索历史吗？")
+                .setPositiveButton("清空") { _, _ ->
+                    viewModel.clearAllSearchHistory()
+                }
+                .setNegativeButton("取消", null)
+                .show()
+        }
+    }
+    
     private fun searchWord() {
         val word = binding.editTextInput.text.toString().trim()
         if (word.isNotEmpty()) {
@@ -130,9 +164,9 @@ class MainActivity : AppCompatActivity() {
                 // 根据是否有API密钥显示不同的加载文本
                 val hasApiKey = viewModel.hasApiKey()
                 binding.textLoading.text = if (hasApiKey) {
-                    "正在生成包含「$currentWord」的文章..."
+                    "正在搜索「$currentWord」的准确定义并生成学习内容..."
                 } else {
-                    "正在生成「$currentWord」的示例文章..."
+                    "正在生成「$currentWord」的示例学习内容..."
                 }
             } else {
                 binding.loadingContainer.visibility = View.GONE
@@ -141,6 +175,16 @@ class MainActivity : AppCompatActivity() {
                 if (viewModel.messages.value?.isEmpty() == true) {
                     binding.layoutEmpty.visibility = View.VISIBLE
                 }
+            }
+        }
+        
+        // 观察搜索历史
+        viewModel.searchHistory.observe(this) { historyList ->
+            if (historyList.isNotEmpty()) {
+                binding.layoutSearchHistory.visibility = View.VISIBLE
+                searchHistoryAdapter.submitList(historyList)
+            } else {
+                binding.layoutSearchHistory.visibility = View.GONE
             }
         }
     }
@@ -224,7 +268,6 @@ class MainActivity : AppCompatActivity() {
         
         // 设置当前选择的样式
         val currentStyle = viewModel.currentStyle.value ?: ArticleStyle.DAILY
-        val currentLanguage = viewModel.currentLanguage.value ?: Language.ENGLISH
         
         // 设置API密钥状态
         updateApiKeyStatus(bottomSheetBinding)
@@ -234,11 +277,6 @@ class MainActivity : AppCompatActivity() {
             ArticleStyle.DAILY -> bottomSheetBinding.radioDaily.isChecked = true
             ArticleStyle.LITERATURE -> bottomSheetBinding.radioLiterature.isChecked = true
             ArticleStyle.BUSINESS -> bottomSheetBinding.radioBusiness.isChecked = true
-        }
-        
-        when (currentLanguage) {
-            Language.ENGLISH -> bottomSheetBinding.radioEnglish.isChecked = true
-            Language.CHINESE -> bottomSheetBinding.radioChinese.isChecked = true
         }
         
         // API密钥管理按钮
@@ -257,16 +295,6 @@ class MainActivity : AppCompatActivity() {
                 else -> ArticleStyle.DAILY
             }
             viewModel.setArticleStyle(style)
-        }
-        
-        // 监听语言选择
-        bottomSheetBinding.radioGroupLanguage.setOnCheckedChangeListener { _, checkedId ->
-            val language = when (checkedId) {
-                R.id.radio_english -> Language.ENGLISH
-                R.id.radio_chinese -> Language.CHINESE
-                else -> Language.ENGLISH
-            }
-            viewModel.setLanguage(language)
         }
         
         bottomSheetDialog.show()
@@ -326,28 +354,28 @@ class MainActivity : AppCompatActivity() {
     
     private fun showAboutDialog() {
         val aboutMessage = if (viewModel.hasApiKey()) {
-            "WordContext AI 是一款智能词汇学习工具，通过生成式AI技术为您创建包含目标词汇的定制化文章，帮助您在真实语境中掌握词汇用法。\n\n" +
+            "WordContext AI 是一款专为中国学生设计的英语词汇学习工具，通过联网搜索和AI技术为您提供准确、全面的英语学习内容。\n\n" +
             "功能特点：\n" +
-            "• 智能文章生成 ✅\n" +
-            "• 词汇高亮显示\n" +
-            "• 多种文章风格\n" +
-            "• 中英文双语支持\n" +
-            "• 一键复制分享\n\n" +
-            "当前状态：已连接AI服务 🟢\n\n" +
-            "版本：1.0\n" +
-            "© 2024 WordContext AI"
+            "• 联网获取真实英文词典释义 ✅\n" +
+            "• 提供准确的中文解释 ✅\n" +
+            "• 地道英文例句配中文翻译 ✅\n" +
+            "• 智能生成不同风格的英文文章\n" +
+            "• 词汇高亮显示，方便学习\n" +
+            "• 词根词缀分析，帮助记忆\n" +
+            "• 一键复制分享学习内容\n\n" +
+            "当前状态：已连接AI服务 🟢\n\n"
         } else {
-            "WordContext AI 是一款智能词汇学习工具，通过生成式AI技术为您创建包含目标词汇的定制化文章，帮助您在真实语境中掌握词汇用法。\n\n" +
+            "WordContext AI 是一款专为中国学生设计的英语词汇学习工具，通过联网搜索和AI技术为您提供准确、全面的英语学习内容。\n\n" +
             "功能特点：\n" +
-            "• 智能文章生成\n" +
-            "• 词汇高亮显示\n" +
-            "• 多种文章风格\n" +
-            "• 中英文双语支持\n" +
-            "• 一键复制分享\n\n" +
+            "• 联网获取真实英文词典释义\n" +
+            "• 提供准确的中文解释\n" +
+            "• 地道英文例句配中文翻译\n" +
+            "• 智能生成不同风格的英文文章\n" +
+            "• 词汇高亮显示，方便学习\n" +
+            "• 词根词缀分析，帮助记忆\n" +
+            "• 一键复制分享学习内容\n\n" +
             "当前状态：演示模式 🟡\n" +
-            "提示：请在设置中配置API密钥以使用完整功能\n\n" +
-            "版本：1.0\n" +
-            "© 2024 WordContext AI"
+            "提示：请在设置中配置API密钥以使用完整功能\n\n"
         }
         
         MaterialAlertDialogBuilder(this)

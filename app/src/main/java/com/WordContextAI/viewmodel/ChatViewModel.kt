@@ -5,9 +5,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.wordcontextai.data.AppDatabase
 import com.wordcontextai.data.ArticleStyle
 import com.wordcontextai.data.ChatMessage
 import com.wordcontextai.data.Language
+import com.wordcontextai.data.SearchHistory
 import com.wordcontextai.repository.WordRepository
 import com.wordcontextai.utils.PreferenceManager
 import com.wordcontextai.utils.LanguageUtils
@@ -18,6 +20,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     
     private val repository = WordRepository(application)
     private val preferenceManager = PreferenceManager(application)
+    private val database = AppDatabase.getDatabase(application)
+    private val searchHistoryDao = database.searchHistoryDao()
     
     private val _messages = MutableLiveData<List<ChatMessage>>(emptyList())
     val messages: LiveData<List<ChatMessage>> = _messages
@@ -28,9 +32,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     private val _currentStyle = MutableLiveData<ArticleStyle>(ArticleStyle.DAILY)
     val currentStyle: LiveData<ArticleStyle> = _currentStyle
     
-    // 自动检测系统语言并设置为默认值
-    private val _currentLanguage = MutableLiveData<Language>(LanguageUtils.getSystemLanguage(application))
-    val currentLanguage: LiveData<Language> = _currentLanguage
+    // 搜索历史
+    val searchHistory: LiveData<List<SearchHistory>> = searchHistoryDao.getRecentSearches()
     
     init {
         // 不显示欢迎消息，保持界面简洁
@@ -45,11 +48,16 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         
         _isLoading.value = true
         
+        // 添加到搜索历史
+        viewModelScope.launch {
+            searchHistoryDao.insertSearch(SearchHistory(word = word))
+        }
+        
         viewModelScope.launch {
             repository.generateArticle(
                 word = word,
                 style = _currentStyle.value ?: ArticleStyle.DAILY,
-                language = _currentLanguage.value ?: Language.ENGLISH
+                language = Language.ENGLISH // 固定为英语学习模式
             ).fold(
                 onSuccess = { article ->
                     val responseMessage = ChatMessage(
@@ -74,12 +82,20 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
     
-    fun setArticleStyle(style: ArticleStyle) {
-        _currentStyle.value = style
+    fun deleteSearchHistory(searchHistory: SearchHistory) {
+        viewModelScope.launch {
+            searchHistoryDao.deleteSearch(searchHistory)
+        }
     }
     
-    fun setLanguage(language: Language) {
-        _currentLanguage.value = language
+    fun clearAllSearchHistory() {
+        viewModelScope.launch {
+            searchHistoryDao.deleteAllSearches()
+        }
+    }
+    
+    fun setArticleStyle(style: ArticleStyle) {
+        _currentStyle.value = style
     }
     
     fun clearChat() {
