@@ -3,7 +3,9 @@ package com.wordcontextai
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
@@ -15,10 +17,12 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.wordcontextai.adapter.SearchHistoryAdapter
@@ -28,18 +32,35 @@ import com.wordcontextai.databinding.ActivityMainBinding
 import com.wordcontextai.databinding.BottomSheetSettingsBinding
 import com.wordcontextai.databinding.DialogApiKeyBinding
 import com.wordcontextai.viewmodel.ChatViewModel
+import com.wordcontextai.viewmodel.UserViewModel
+import com.wordcontextai.utils.UserPreferences
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import io.noties.markwon.Markwon
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
+import java.io.File
+import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
     
     private lateinit var binding: ActivityMainBinding
     private val viewModel: ChatViewModel by viewModels()
+    private val userViewModel: UserViewModel by viewModels()
+    private lateinit var userPreferences: UserPreferences
     private lateinit var markwon: Markwon
     private var currentWord: String = ""
     private var currentContent: String = "" // 保存原始内容用于复制
     private lateinit var searchHistoryAdapter: SearchHistoryAdapter
+    
+    // 图片选择器
+    private val imagePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { selectedImageUri ->
+            saveAvatarToInternalStorage(selectedImageUri)
+        }
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +68,9 @@ class MainActivity : AppCompatActivity() {
         // 使用 ViewBinding
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // 初始化用户偏好设置
+        userPreferences = UserPreferences(this)
         
         // 基本设置
         setupToolbar()
@@ -133,12 +157,35 @@ class MainActivity : AppCompatActivity() {
     private fun searchWord() {
         val word = binding.editTextInput.text.toString().trim()
         if (word.isNotEmpty()) {
-            currentWord = word
-            viewModel.generateArticleForWord(word)
-            // 隐藏键盘
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(binding.editTextInput.windowToken, 0)
+            // 检查是否已登录
+            val currentUser = userViewModel.currentUser.value
+            if (currentUser == null) {
+                // 未登录，显示登录提示
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("需要登录")
+                    .setMessage("登录后可以保存您的搜索历史，方便随时查看学习记录。")
+                    .setPositiveButton("去登录") { _, _ ->
+                        val intent = Intent(this, LoginActivity::class.java)
+                        startActivity(intent)
+                    }
+                    .setNegativeButton("暂不登录") { _, _ ->
+                        // 允许未登录用户使用，但不保存历史
+                        performSearch(word)
+                    }
+                    .show()
+            } else {
+                // 已登录，正常搜索
+                performSearch(word)
+            }
         }
+    }
+    
+    private fun performSearch(word: String) {
+        currentWord = word
+        viewModel.generateArticleForWord(word)
+        // 隐藏键盘
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.editTextInput.windowToken, 0)
     }
     
     private fun observeViewModel() {
@@ -185,6 +232,27 @@ class MainActivity : AppCompatActivity() {
                 searchHistoryAdapter.submitList(historyList)
             } else {
                 binding.layoutSearchHistory.visibility = View.GONE
+            }
+        }
+        
+        // 观察用户状态，更新toolbar头像
+        lifecycleScope.launch {
+            userViewModel.currentUser.collectLatest { user ->
+                if (user != null) {
+                    binding.toolbarAvatar.visibility = View.VISIBLE
+                    if (user.avatarPath != null && File(user.avatarPath).exists()) {
+                        binding.toolbarAvatar.setImageURI(Uri.fromFile(File(user.avatarPath)))
+                    } else {
+                        binding.toolbarAvatar.setImageResource(R.drawable.ic_account_circle)
+                    }
+                    
+                    // 点击头像打开设置
+                    binding.toolbarAvatar.setOnClickListener {
+                        showSettingsBottomSheet()
+                    }
+                } else {
+                    binding.toolbarAvatar.visibility = View.GONE
+                }
             }
         }
     }
@@ -266,6 +334,9 @@ class MainActivity : AppCompatActivity() {
         val bottomSheetDialog = BottomSheetDialog(this)
         bottomSheetDialog.setContentView(bottomSheetBinding.root)
         
+        // 设置用户信息显示
+        setupUserInfo(bottomSheetBinding, bottomSheetDialog)
+        
         // 设置当前选择的样式
         val currentStyle = viewModel.currentStyle.value ?: ArticleStyle.DAILY
         
@@ -298,6 +369,58 @@ class MainActivity : AppCompatActivity() {
         }
         
         bottomSheetDialog.show()
+    }
+    
+    private fun setupUserInfo(binding: BottomSheetSettingsBinding, dialog: BottomSheetDialog) {
+        lifecycleScope.launch {
+            userViewModel.currentUser.collectLatest { user ->
+                if (user != null) {
+                    // 已登录，显示用户信息
+                    binding.layoutUserInfo.visibility = View.VISIBLE
+                    binding.cardLoginPrompt.visibility = View.GONE
+                    binding.textViewUsername.text = user.username
+                    
+                    // 显示用户头像
+                    if (user.avatarPath != null && File(user.avatarPath).exists()) {
+                        binding.imageViewAvatar.setImageURI(Uri.fromFile(File(user.avatarPath)))
+                    } else {
+                        binding.imageViewAvatar.setImageResource(R.drawable.ic_account_circle)
+                    }
+                    
+                    // 点击头像更换
+                    binding.imageViewAvatar.setOnClickListener {
+                        if (userViewModel.currentUser.value != null) {
+                            imagePickerLauncher.launch("image/*")
+                        } else {
+                            Toast.makeText(this@MainActivity, "请先登录", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    
+                    // 登出按钮
+                    binding.buttonLogout.setOnClickListener {
+                        MaterialAlertDialogBuilder(this@MainActivity)
+                            .setTitle("退出登录")
+                            .setMessage("确定要退出登录吗？")
+                            .setPositiveButton("退出") { _, _ ->
+                                userViewModel.logout()
+                                dialog.dismiss()
+                            }
+                            .setNegativeButton("取消", null)
+                            .show()
+                    }
+                } else {
+                    // 未登录，显示登录提示但不强制
+                    binding.layoutUserInfo.visibility = View.GONE
+                    binding.cardLoginPrompt.visibility = View.VISIBLE
+                    
+                    binding.buttonGoLogin.setOnClickListener {
+                        dialog.dismiss()
+                        val intent = Intent(this@MainActivity, LoginActivity::class.java)
+                        startActivity(intent)
+                    }
+                }
+            }
+        }
     }
     
     private fun updateApiKeyStatus(binding: BottomSheetSettingsBinding) {
@@ -383,5 +506,25 @@ class MainActivity : AppCompatActivity() {
             .setMessage(aboutMessage)
             .setPositiveButton("确定", null)
             .show()
+    }
+    
+    private fun saveAvatarToInternalStorage(uri: Uri) {
+        try {
+            val inputStream = contentResolver.openInputStream(uri)
+            val fileName = "avatar_${System.currentTimeMillis()}.jpg"
+            val file = File(filesDir, fileName)
+            
+            val outputStream = FileOutputStream(file)
+            inputStream?.copyTo(outputStream)
+            
+            inputStream?.close()
+            outputStream.close()
+            
+            // 更新用户头像路径
+            userViewModel.updateAvatar(file.absolutePath)
+            Toast.makeText(this, "头像更新成功", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "头像更新失败", Toast.LENGTH_SHORT).show()
+        }
     }
 }

@@ -28,7 +28,21 @@
             android:layout_height="?attr/actionBarSize"
             android:background="@color/white"
             app:title="WordContext AI"
-            app:titleTextColor="@color/primary" />
+            app:titleTextColor="@color/primary">
+            
+            <!-- 用户头像 -->
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/toolbar_avatar"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="start|center_vertical"
+                android:layout_marginStart="16dp"
+                android:src="@drawable/ic_account_circle"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
+                app:shapeAppearanceOverlay="@style/CircularImageView" />
+            
+        </com.google.android.material.appbar.MaterialToolbar>
 
     </LinearLayout>
 

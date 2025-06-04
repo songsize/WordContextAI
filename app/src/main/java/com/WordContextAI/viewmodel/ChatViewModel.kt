@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.asLiveData
 import com.wordcontextai.data.AppDatabase
 import com.wordcontextai.data.ArticleStyle
 import com.wordcontextai.data.ChatMessage
@@ -13,13 +14,16 @@ import com.wordcontextai.data.SearchHistory
 import com.wordcontextai.repository.WordRepository
 import com.wordcontextai.utils.PreferenceManager
 import com.wordcontextai.utils.LanguageUtils
+import com.wordcontextai.utils.UserPreferences
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.flowOf
 import java.util.Date
 
 class ChatViewModel(application: Application) : AndroidViewModel(application) {
     
     private val repository = WordRepository(application)
     private val preferenceManager = PreferenceManager(application)
+    private val userPreferences = UserPreferences(application)
     private val database = AppDatabase.getDatabase(application)
     private val searchHistoryDao = database.searchHistoryDao()
     
@@ -32,9 +36,11 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     private val _currentStyle = MutableLiveData<ArticleStyle>(ArticleStyle.DAILY)
     val currentStyle: LiveData<ArticleStyle> = _currentStyle
     
-    // 搜索历史
-    val searchHistory: LiveData<List<SearchHistory>> = searchHistoryDao.getRecentSearches()
-    
+    // 搜索历史 - 根据用户ID获取
+    val searchHistory: LiveData<List<SearchHistory>> = userPreferences.getUserId()?.let { userId ->
+        searchHistoryDao.getRecentByUser(userId).asLiveData()
+    } ?: flowOf(emptyList<SearchHistory>()).asLiveData()
+
     init {
         // 不显示欢迎消息，保持界面简洁
         _messages.value = emptyList()
@@ -48,9 +54,14 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         
         _isLoading.value = true
         
-        // 添加到搜索历史
+        // 添加到搜索历史（如果用户已登录）
         viewModelScope.launch {
-            searchHistoryDao.insertSearch(SearchHistory(word = word))
+            userPreferences.getUserId()?.let { userId ->
+                searchHistoryDao.insertSearch(SearchHistory(
+                    word = word,
+                    userId = userId
+                ))
+            }
         }
         
         viewModelScope.launch {
@@ -90,7 +101,9 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     
     fun clearAllSearchHistory() {
         viewModelScope.launch {
-            searchHistoryDao.deleteAllSearches()
+            userPreferences.getUserId()?.let { userId ->
+                searchHistoryDao.deleteAllByUser(userId)
+            }
         }
     }
     
@@ -112,4 +125,5 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
     fun hasApiKey(): Boolean = preferenceManager.hasApiKey()
     
     fun getApiKey(): String? = preferenceManager.apiKey
-} 
+}
+

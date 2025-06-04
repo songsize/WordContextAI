@@ -23,4 +23,7 @@
     <color name="highlight_yellow">#FEF7E0</color>
     <color name="highlight_text">#EA8600</color>
     <color name="card_stroke">#DADCE0</color>
+    <color name="text_primary">#1F1F1F</color>
+    <color name="text_secondary">#5F6368</color>
+    <color name="primary_light">#E8F0FE</color>
 </resources>
