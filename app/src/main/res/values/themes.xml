@@ -20,4 +20,10 @@
     </style>
 
     <style name="Theme.WordContextAI" parent="Base.Theme.WordContextAI" />
+    
+    <!-- 圆形图片样式 -->
+    <style name="CircularImageView">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>
