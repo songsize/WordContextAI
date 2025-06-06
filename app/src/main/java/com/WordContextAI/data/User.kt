@@ -14,6 +14,7 @@ data class User(
     val username: String,
     val passwordHash: String,
     val avatarPath: String? = null,
+    val apiKey: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val lastLoginAt: Long = System.currentTimeMillis()
-) 
+)

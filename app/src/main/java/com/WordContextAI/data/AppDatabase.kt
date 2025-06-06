@@ -23,14 +23,14 @@ abstract class AppDatabase : RoomDatabase() {
         private var INSTANCE: AppDatabase? = null
         
         private val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                // 创建用户表
+            override fun migrate(database: SupportSQLiteDatabase) {                // 创建用户表
                 database.execSQL("""
                     CREATE TABLE IF NOT EXISTS users (
                         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                         username TEXT NOT NULL,
                         passwordHash TEXT NOT NULL,
                         avatarPath TEXT,
+                        apiKey TEXT,
                         createdAt INTEGER NOT NULL,
                         lastLoginAt INTEGER NOT NULL
                     )
