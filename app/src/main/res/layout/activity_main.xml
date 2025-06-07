@@ -46,54 +46,75 @@
 
     </LinearLayout>
 
-    <!-- 搜索卡片 -->
-    <com.google.android.material.card.MaterialCardView
+    <!-- 搜索框和返回按钮容器 -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
-        app:strokeColor="@color/card_stroke"
-        app:strokeWidth="1dp">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="4dp">
+        <!-- 返回按钮 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_back"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:visibility="gone"
+            app:icon="@drawable/ic_arrow_back"
+            app:iconTint="@color/primary" />
 
-            <EditText
-                android:id="@+id/edit_text_input"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@null"
-                android:hint="输入要学习的英语单词..."
-                android:imeOptions="actionSearch"
-                android:inputType="text"
-                android:maxLines="1"
-                android:textSize="16sp"
-                android:textColor="@color/on_surface"
-                android:textColorHint="@color/gray_dark" />
+        <!-- 搜索卡片 -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/button_send"
-                style="@style/Widget.Material3.Button.IconButton.Filled"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                app:icon="@drawable/ic_search"
-                app:iconTint="@color/white"
-                app:backgroundTint="@color/primary"
-                app:cornerRadius="12dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="4dp">
 
-        </LinearLayout>
+                <EditText
+                    android:id="@+id/edit_text_input"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:hint="输入要学习的英语单词或词组..."
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:textSize="16sp"
+                    android:textColor="@color/on_surface"
+                    android:textColorHint="@color/gray_dark" />
 
-    </com.google.android.material.card.MaterialCardView>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_send"
+                    style="@style/Widget.Material3.Button.IconButton.Filled"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    app:icon="@drawable/ic_search"
+                    app:iconTint="@color/white"
+                    app:backgroundTint="@color/primary"
+                    app:cornerRadius="12dp" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
 
     <!-- 内容滚动区域 -->
     <ScrollView
@@ -108,9 +129,9 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- 单词卡片 -->
+            <!-- 词语释义卡片 -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/card_word"
+                android:id="@+id/card_definition"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
@@ -123,26 +144,64 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
+                    android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/text_word"
-                        android:layout_width="wrap_content"
+                    <!-- 标题栏 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="28sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/primary"
-                        tools:text="Example" />
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:background="@color/primary"
+                        android:gravity="center_vertical">
 
-                    <TextView
-                        android:id="@+id/text_pronunciation"
-                        android:layout_width="wrap_content"
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="📚 词语释义"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/white" />
+
+                    </LinearLayout>
+
+                    <!-- 释义内容 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:textSize="14sp"
-                        android:textColor="@color/gray_dark"
-                        tools:text="/ɪɡˈzæmpl/" />
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <TextView
+                            android:id="@+id/text_word"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/primary"
+                            tools:text="Example" />
+
+                        <TextView
+                            android:id="@+id/text_pronunciation"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textSize="14sp"
+                            android:textColor="@color/gray_dark"
+                            tools:text="/ɪɡˈzæmpl/" />
+
+                        <TextView
+                            android:id="@+id/text_definition_content"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:textSize="15sp"
+                            android:lineSpacingMultiplier="1.5"
+                            android:textColor="@color/on_surface"
+                            tools:text="词语释义内容..." />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -165,6 +224,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
+                    <!-- 文章标题栏 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -177,11 +237,24 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="语境文章"
+                            android:text="📝 语境文章"
                             android:textSize="16sp"
                             android:textStyle="bold"
                             android:textColor="@color/on_surface" />
 
+                        <!-- 翻译按钮 -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_translate"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginEnd="8dp"
+                            android:text="翻译"
+                            android:textSize="14sp"
+                            app:icon="@drawable/ic_translate"
+                            app:iconSize="16dp" />
+
+                        <!-- 复制按钮 -->
                         <ImageButton
                             android:id="@+id/button_copy"
                             android:layout_width="40dp"
@@ -191,8 +264,20 @@
                             android:tint="@color/gray_dark"
                             android:scaleType="centerInside" />
 
+                        <!-- 分享按钮 -->
+                        <ImageButton
+                            android:id="@+id/button_share"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:layout_marginStart="4dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:src="@drawable/ic_share"
+                            android:tint="@color/gray_dark"
+                            android:scaleType="centerInside" />
+
                     </LinearLayout>
 
+                    <!-- 文章内容 -->
                     <ScrollView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -210,11 +295,56 @@
 
                     </ScrollView>
 
+                    <!-- 翻译内容 -->
+                    <LinearLayout
+                        android:id="@+id/layout_translation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/card_stroke" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:padding="16dp"
+                            android:background="@color/gray_light"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="🌐 中文译文"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/on_surface" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/text_translation_content"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="20dp"
+                            android:textSize="15sp"
+                            android:lineSpacingMultiplier="1.5"
+                            android:textColor="@color/on_surface"
+                            android:background="@color/white"
+                            tools:text="这里显示翻译内容..." />
+
+                    </LinearLayout>
+
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 加载状态容器 -->
+            <!-- 详细加载状态容器 -->
             <LinearLayout
                 android:id="@+id/loading_container"
                 android:layout_width="match_parent"
@@ -233,23 +363,180 @@
                     app:indicatorColor="@color/primary"
                     app:trackThickness="4dp" />
 
+                <!-- 加载步骤指示器 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <!-- 步骤1 -->
+                    <LinearLayout
+                        android:id="@+id/step_1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="8dp">
+
+                        <com.google.android.material.progressindicator.CircularProgressIndicator
+                            android:id="@+id/step_1_progress"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginEnd="12dp"
+                            android:indeterminate="true"
+                            app:indicatorColor="@color/primary"
+                            app:trackThickness="2dp" />
+
+                        <TextView
+                            android:id="@+id/step_1_text"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="🔍 分析输入内容..."
+                            android:textSize="14sp"
+                            android:textColor="@color/on_surface" />
+
+                        <TextView
+                            android:id="@+id/step_1_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="进行中"
+                            android:textSize="12sp"
+                            android:textColor="@color/primary"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+
+                    <!-- 步骤2 -->
+                    <LinearLayout
+                        android:id="@+id/step_2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="8dp"
+                        android:alpha="0.3">
+
+                        <com.google.android.material.progressindicator.CircularProgressIndicator
+                            android:id="@+id/step_2_progress"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginEnd="12dp"
+                            android:indeterminate="true"
+                            app:indicatorColor="@color/primary"
+                            app:trackThickness="2dp"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/step_2_text"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="📚 获取词汇释义..."
+                            android:textSize="14sp"
+                            android:textColor="@color/on_surface" />
+
+                        <TextView
+                            android:id="@+id/step_2_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="等待中"
+                            android:textSize="12sp"
+                            android:textColor="@color/gray_dark" />
+
+                    </LinearLayout>
+
+                    <!-- 步骤3 -->
+                    <LinearLayout
+                        android:id="@+id/step_3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="8dp"
+                        android:alpha="0.3">
+
+                        <com.google.android.material.progressindicator.CircularProgressIndicator
+                            android:id="@+id/step_3_progress"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginEnd="12dp"
+                            android:indeterminate="true"
+                            app:indicatorColor="@color/primary"
+                            app:trackThickness="2dp"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/step_3_text"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="✍️ 生成学习文章..."
+                            android:textSize="14sp"
+                            android:textColor="@color/on_surface" />
+
+                        <TextView
+                            android:id="@+id/step_3_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="等待中"
+                            android:textSize="12sp"
+                            android:textColor="@color/gray_dark" />
+
+                    </LinearLayout>
+
+                    <!-- 步骤4 -->
+                    <LinearLayout
+                        android:id="@+id/step_4"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="8dp"
+                        android:alpha="0.3">
+
+                        <com.google.android.material.progressindicator.CircularProgressIndicator
+                            android:id="@+id/step_4_progress"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginEnd="12dp"
+                            android:indeterminate="true"
+                            app:indicatorColor="@color/primary"
+                            app:trackThickness="2dp"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/step_4_text"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="🎨 优化内容展示..."
+                            android:textSize="14sp"
+                            android:textColor="@color/on_surface" />
+
+                        <TextView
+                            android:id="@+id/step_4_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="等待中"
+                            android:textSize="12sp"
+                            android:textColor="@color/gray_dark" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
                 <TextView
-                    android:id="@+id/text_loading"
+                    android:id="@+id/text_loading_tip"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:text="正在生成文章..."
+                    android:text="智能分析中，请稍候..."
                     android:textSize="16sp"
-                    android:textColor="@color/gray_dark" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="联网获取真实信息，确保内容准确"
-                    android:textSize="14sp"
                     android:textColor="@color/gray_dark"
-                    android:alpha="0.7" />
+                    android:gravity="center" />
 
             </LinearLayout>
 
@@ -292,7 +579,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="输入英语单词，获取中文释义\n地道例句和实用文章"
+                    android:text="支持单词、词组或多词汇学习\n智能生成释义和文章内容"
                     android:textSize="16sp"
                     android:alpha="0.7"
                     android:gravity="center"

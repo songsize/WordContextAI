@@ -17,6 +17,8 @@ import com.wordcontextai.utils.LanguageUtils
 import com.wordcontextai.utils.UserPreferences
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import java.util.Date
 
 class ChatViewModel(application: Application) : AndroidViewModel(application) {
@@ -65,16 +67,108 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         }
         
         viewModelScope.launch {
-            repository.generateArticle(
-                word = word,
+            try {
+                // 使用coroutineScope并行调用两个API
+                coroutineScope {
+                    // 并行生成释义和文章
+                    val definitionDeferred = async {
+                        repository.generateDefinition(
+                            word = word,
+                            language = Language.ENGLISH
+                        )
+                    }
+                    
+                    val articleDeferred = async {
+                        repository.generateArticle(
+                            word = word,
+                            style = _currentStyle.value ?: ArticleStyle.DAILY,
+                            language = Language.ENGLISH
+                        )
+                    }
+                    
+                    // 等待两个结果
+                    val definitionResult = definitionDeferred.await()
+                    val articleResult = articleDeferred.await()
+                    
+                    // 处理结果
+                    if (definitionResult.isSuccess && articleResult.isSuccess) {
+                        val definition = definitionResult.getOrThrow()
+                        val article = articleResult.getOrThrow()
+                        
+                        // 组合内容，使用特殊标记分隔
+                        val combinedContent = """
+                        $definition
+                        
+                        <!-- ARTICLE_SEPARATOR -->
+                        
+                        $article
+                        """.trimIndent()
+                        
+                        val responseMessage = ChatMessage(
+                            content = combinedContent,
+                            isUser = false,
+                            targetWord = word
+                        )
+                        
+                        _messages.value = listOf(responseMessage)
+                    } else {
+                        // 处理错误
+                        val errorMsg = when {
+                            definitionResult.isFailure -> definitionResult.exceptionOrNull()?.message
+                            articleResult.isFailure -> articleResult.exceptionOrNull()?.message
+                            else -> "未知错误"
+                        }
+                        
+                        val errorMessage = ChatMessage(
+                            content = "抱歉，生成内容时出现错误：$errorMsg\n\n💡 如果您还未设置API密钥，请点击右上角设置按钮进行配置。",
+                            isUser = false
+                        )
+                        
+                        _messages.value = listOf(errorMessage)
+                    }
+                }
+            } catch (e: Exception) {
+                val errorMessage = ChatMessage(
+                    content = "抱歉，生成内容时出现错误：${e.message}\n\n💡 如果您还未设置API密钥，请点击右上角设置按钮进行配置。",
+                    isUser = false
+                )
+                
+                _messages.value = listOf(errorMessage)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+    
+    fun generateArticleForMultipleWords(words: String) {
+        if (words.isBlank()) return
+        
+        // 清除之前的所有消息
+        _messages.value = emptyList()
+        
+        _isLoading.value = true
+        
+        // 为多词汇输入添加搜索历史
+        viewModelScope.launch {
+            userPreferences.getUserId()?.let { userId ->
+                searchHistoryDao.insertSearch(SearchHistory(
+                    word = "多词汇: ${words.take(20)}...",
+                    userId = userId
+                ))
+            }
+        }
+        
+        viewModelScope.launch {
+            repository.generateArticleForMultipleWords(
+                words = words,
                 style = _currentStyle.value ?: ArticleStyle.DAILY,
-                language = Language.ENGLISH // 固定为英语学习模式
+                language = Language.ENGLISH
             ).fold(
                 onSuccess = { article ->
                     val responseMessage = ChatMessage(
                         content = article,
                         isUser = false,
-                        targetWord = word
+                        targetWord = words
                     )
                     
                     _messages.value = listOf(responseMessage)
@@ -82,7 +176,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                 },
                 onFailure = { error ->
                     val errorMessage = ChatMessage(
-                        content = "抱歉，生成文章时出现错误：${error.message}\n\n💡 如果您还未设置API密钥，请点击右上角设置按钮进行配置。",
+                        content = "抱歉，生成多词汇文章时出现错误：${error.message}\n\n💡 如果您还未设置API密钥，请点击右上角设置按钮进行配置。",
                         isUser = false
                     )
                     
@@ -91,6 +185,10 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                 }
             )
         }
+    }
+    
+    suspend fun translateText(text: String): String {
+        return repository.translateText(text)
     }
     
     fun deleteSearchHistory(searchHistory: SearchHistory) {

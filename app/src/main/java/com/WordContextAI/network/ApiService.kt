@@ -15,7 +15,7 @@ data class ApiRequest(
     val model: String = "deepseek-chat",
     val messages: List<ApiMessage>,
     val temperature: Double = 0.7,
-    val max_tokens: Int = 500
+    val max_tokens: Int = 2000  // 大幅增加token限制，支持更长文章
 )
 
 data class ApiMessage(

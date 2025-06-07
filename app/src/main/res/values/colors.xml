@@ -26,4 +26,5 @@
     <color name="text_primary">#1F1F1F</color>
     <color name="text_secondary">#5F6368</color>
     <color name="primary_light">#E8F0FE</color>
+    <color name="success_green">#34A853</color>
 </resources>
