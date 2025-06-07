@@ -1,54 +1,176 @@
 # WordContext AI
 
-WordContext AI是一款智能词汇学习工具，通过生成式AI技术为您创建包含目标词汇的定制化文章，帮助您在真实语境中掌握词汇用法。
+<p align="center">
+  <img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android">
+  <img src="https://img.shields.io/badge/Kotlin-0095D5?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin">
+  <img src="https://img.shields.io/badge/Material%20Design-757575?style=for-the-badge&logo=material-design&logoColor=white" alt="Material Design">
+  <img src="https://img.shields.io/badge/API-26%2B-brightgreen?style=for-the-badge" alt="API">
+</p>
 
-## 功能特点
+An intelligent vocabulary learning tool powered by AI that generates contextual articles containing target vocabulary words to help users master word usage in real-world scenarios.
 
-- **智能文章生成**：基于DeepSeek AI的上下文生成引擎
-- **词汇高亮显示**：自动高亮目标词汇，便于学习
-- **多种文章风格**：支持学术、日常、商务、文学四种写作风格
-- **中英文双语支持**：可生成中文或英文文章
-- **一键复制分享**：方便保存和分享生成的文章
-- **Material Design 3**：现代化的用户界面设计
+## ✨ Features
 
-## 技术架构
+### 🎯 Core Functionality
+- **AI-Powered Article Generation**: Leverages DeepSeek AI to create contextual articles
+- **Smart Word Highlighting**: Automatically highlights target vocabulary in generated content
+- **Multiple Writing Styles**: Supports Academic, Daily, Business, and Literary writing styles
+- **Bilingual Support**: Generate articles in both Chinese and English
+- **Search History**: Save and manage your vocabulary learning history
+- **User Authentication**: Secure login system with personalized experience
 
-- **架构模式**：MVVM (Model-View-ViewModel)
-- **网络请求**：Retrofit + OkHttp
-- **异步处理**：Kotlin Coroutines
-- **UI框架**：Material Design 3 + ViewBinding
-- **数据管理**：LiveData + ViewModel
+### 🎨 User Interface
+- **Material Design 3**: Modern and intuitive user interface
+- **Dark/Light Theme**: Adaptive theming support
+- **Responsive Layout**: Optimized for various screen sizes
+- **Smooth Animations**: Enhanced user experience with fluid transitions
 
-## 使用方法
+### 🔧 Utility Features
+- **One-Click Copy**: Easily copy generated articles to clipboard
+- **Share Functionality**: Share articles across different platforms
+- **Translation Support**: Built-in translation capabilities
+- **Export Options**: Save articles for offline access
 
-1. **输入单词**：在底部输入框中输入您想要学习的单词
-2. **选择设置**：点击右上角设置按钮，选择文章风格和语言
-3. **生成文章**：点击发送按钮，AI将为您生成包含该词汇的定制文章
-4. **学习词汇**：文章中的目标词汇会被高亮显示
-5. **保存分享**：使用复制或分享功能保存学习内容
+## 🏗️ Technical Architecture
 
-### 系统要求
+### Architecture Pattern
+- **MVVM (Model-View-ViewModel)**: Clean separation of concerns
+- **Repository Pattern**: Centralized data management
+- **Single Activity Architecture**: Modern Android navigation approach
 
-- Android 8.0 (API level 26) 或更高版本
+### Tech Stack
+- **Language**: Kotlin 100%
+- **UI Framework**: Android Views with ViewBinding
+- **Design System**: Material Design 3
+- **Network**: Retrofit + OkHttp + Coroutines
+- **Database**: Room Database
+- **Async Processing**: Kotlin Coroutines + Flow
+- **Image Loading**: Glide
+- **Markdown Rendering**: Markwon
+
+### Dependencies
+```kotlin
+// Core Android
+implementation "androidx.core:core-ktx:1.12.0"
+implementation "androidx.appcompat:appcompat:1.6.1"
+implementation "com.google.android.material:material:1.11.0"
+
+// Architecture Components
+implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0"
+implementation "androidx.room:room-runtime:2.6.1"
+
+// Network
+implementation "com.squareup.retrofit2:retrofit:2.9.0"
+implementation "com.squareup.okhttp3:logging-interceptor:4.12.0"
+
+// Coroutines
+implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
+
+// Markdown
+implementation "io.noties.markwon:core:4.6.2"
+```
+
+## 📱 How to Use
+
+### Getting Started
+1. **Input Vocabulary**: Enter the word or phrase you want to learn in the input field
+2. **Configure Settings**: Tap the settings button to choose article style and language preferences
+3. **Generate Content**: Tap the send button to generate AI-powered contextual articles
+4. **Study Vocabulary**: Target words are automatically highlighted for easy identification
+5. **Save & Share**: Use copy or share functions to save your learning materials
+
+### Feature Guide
+- **Search History**: Access your previous searches from the history panel
+- **Translation**: Use the translate button to get translations of generated content
+- **User Profile**: Login to sync your data across devices
+- **Customization**: Adjust article style and language in settings
+
+## 🚀 Installation & Setup
+
+### Prerequisites
+- Android Studio 2023.1.1 or later
+- Android SDK API level 26 or higher
 - Java 11
-- 网络连接
+- Internet connection for AI functionality
 
-## 项目结构
+### Build Instructions
+1. Clone the repository
+   ```bash
+   git clone https://github.com/songsize/WordContextAI.git
+   ```
+
+2. Open in Android Studio
+   ```bash
+   cd WordContextAI
+   # Open project in Android Studio
+   ```
+
+3. Configure API Keys
+   - Set up your DeepSeek AI API key in the app settings
+   - Configure any additional API endpoints as needed
+
+4. Build and Run
+   ```bash
+   ./gradlew assembleDebug
+   # Or use Android Studio's build system
+   ```
+
+## 📁 Project Structure
 
 ```
 app/src/main/java/com/wordcontextai/
-├── data/           # 数据模型
-├── network/        # 网络层
-├── repository/     # 数据仓库
-├── viewmodel/      # ViewModel层
-├── adapter/        # RecyclerView适配器
-└── MainActivity.kt # 主Activity
+├── adapter/           # RecyclerView adapters
+├── data/             # Data models and entities
+├── network/          # API services and networking
+├── repository/       # Data repository layer
+├── utils/           # Utility classes and helpers
+├── viewmodel/       # ViewModel classes
+├── LoginActivity.kt  # Authentication activity
+└── MainActivity.kt   # Main application activity
+
+app/src/main/res/
+├── drawable/        # Vector drawables and icons
+├── layout/         # XML layout files
+├── values/         # Colors, strings, styles
+└── ...
 ```
 
-## 构建说明
+## 🔧 Configuration
 
-1. 克隆项目到本地
-2. 在Android Studio中打开项目
-3. 确保已安装Java 11
-4. 配置DeepSeek API密钥
-5. 同步项目并运行
+### API Setup
+1. Obtain a DeepSeek AI API key from their official website
+2. Configure the API key in the app settings or preferences
+3. Ensure network permissions are properly set
+
+### Customization
+- Modify themes in `res/values/themes.xml`
+- Adjust colors in `res/values/colors.xml`
+- Configure app behavior in `UserPreferences.kt`
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how you can help:
+
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Commit your changes** (`git commit -m 'Add amazing feature'`)
+4. **Push to the branch** (`git push origin feature/amazing-feature`)
+5. **Open a Pull Request**
+
+### Development Guidelines
+- Follow Kotlin coding conventions
+- Use meaningful commit messages
+- Add documentation for new features
+- Test your changes thoroughly
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **DeepSeek AI** for providing the language model API
+- **Material Design** for the design system
+- **Android Jetpack** for the architecture components
+- **Open Source Community** for the excellent libraries
+
